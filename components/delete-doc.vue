@@ -1,7 +1,8 @@
 <template>  
     <div>
         <button
-        @click="$emit('remove-doc', doc.id)"><img src="/delete.png">
+        class="del_btn"
+        @click="$emit('delete-doc', doc.id)"><img src="/delete.png">
         </button>
     </div>
     </template>
@@ -20,5 +21,9 @@
     </script>
     
     <style scoped>
+   
+    .del_btn:hover{
+       opacity: 0.5;  
+    }
    
     </style>

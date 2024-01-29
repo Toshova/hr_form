@@ -1,36 +1,34 @@
 <template>
 <div class="wrapper">
 
-
   <div class="form_header">
-            <span id="docs_header">Документы</span>
-            <div class="btn_wrapper">
-              <div >
-                <button ><img id="bookmark" src="/bookmark.png"></button>
-              </div>
-              <div class="btn">
-                <button> Новый тип</button>
-              </div>
-              <div class="btn">
-                <button>Новый документ</button>
-              </div>
-            </div>
-            
+    <span id="docs_header" >Документы</span>
+      <div class="btn_wrapper">
+        <div >
+          <button ><img id="bookmark" src="/bookmark.png"></button>
+        </div>
+        <div class="btn">
+          <button> Новый тип</button>
+        </div>
+        <div class="btn">
+          <button>Новый документ</button>
+        </div>
+      </div>           
   </div>
 
-  <div class="search_form">
-    <form action="" method="get">
+  <div class="search_form" >
+    <form action="" method="get" >
       <button type="submit"><img src="/loupe.png"></button>
-      <input placeholder="Поиск" type="search">
+      <input placeholder="Поиск" type="search" v-model="searchQuery">
     </form>
   </div>
 
   <div class="accord_wrapper">
-    <accordionFormVue/>
-
+    <nested-drag :docs="list" @delete-doc="deleteDoc"/>
   </div>
+  </div>
+  
 
-</div>
 </template>
 
 <style>
@@ -100,41 +98,84 @@ body{
 
 
 <script>
-import accordionFormVue from '../components/accordion-form.vue'
+import nestedDrag from '../components/nested-drag.vue';
 
 export default {
   name: 'IndexPage',
 components: {
-  accordionFormVue,
+  nestedDrag
 }, 
+
 data(){
   return {
-    
-		rows: [
-			{
-        id: 1,
-				term: 'Term 1',
-				details: 'Some text here...',
-				open: false
-			},
-			{
-        id: 2,
-				term: 'Term 2',
-				details: 'Some text here...',
-				open: false
-			},
-			 {
-        id: 3,
-				term: 'Term 3',
-				details: 'Some text here...',
-				open: false
-			}
-		]
+    display: "Nested",
+		list: [
+        {
+          id: 1,
+          name: "Обязательные для всех",
+          type: "Category",
+          open: false,
+          docs: [
+            {
+              id: 2,
+              name: "Паспорт",
+              type: "Document",
+              
+            },
+            {
+              id: 3,
+              name: "Тестовое задание кандидата",
+              type: "Document",
+              
+            },
+            {
+              id: 4,
+              name: "Трудовой договор",
+              type: "Document",
+            },
+            {
+              id: 5,
+              name:  "ИНН",
+              type: "Document",
+            },
+            {
+            id: 6,
+            name: 'Мед. книжка',
+            type: "Document",
+            },
+          ]
+        },
+        {
+          id: 7,
+          name: 'Обязательные для трудоустройства',
+          type: "Category",
+          open: false,
+          docs: [
+            {
+              id: 8,
+              name: 'Мед. книжка',
+              type: "Document",
+             
+            }
+          ]
+        },
+        {
+          id: 9,
+          name: 'Специальные',
+          type: "Category",
+          open: false, 
+          docs: []
+          
+        }
+      ]
   }
   },
   methods: {
-    
+  deleteDoc(id){
+   this.list=this.list.filter(x => x.id !== id);        
   }
+},
+ 
 }
 </script>
 
