@@ -1,81 +1,146 @@
 <template>
-  <draggable 
-  tag="ul" 
-  :list="docs" 
-  :group="{ name: 'g1' }"
-  ghost-class="moving-card"
-  :options="{handle:'.handle'}"
-  >
-    <dl class="acc_items item" v-for="doc in docs" :key="doc.id">
-      <div class="category_wrap">
-        <div class="category" v-if="doc.type === 'Category'">
+  <div>
+
+    <div class="search_form" >
+    <form action="" method="get" >
+      <button type="submit"><img src="/loupe.png"></button>
+      <input 
+      placeholder="Поиск" 
+      type="search" 
+      v-model="query">
+    </form>
+  </div>
+
+    <draggable 
+      :list="docs" 
+      :group="{ name: 'g1', put: [] }" 
+      ghost-class="moving-item"
+      >
+
+      <dl class="acc_items item" v-for="(doc, idx) in queryDocs" :key="doc.id">
+
+        <div class="category term" >
 
           <button class="arrow arrow-up" v-if="doc.open && doc.type === 'Category'" @click="doc.open = !doc.open"></button>
           <button class="arrow arrow-down" v-if="!doc.open && doc.type === 'Category'" @click="doc.open = !doc.open" ></button>
 
-          <span v-text="doc.name "></span>
+          <p > {{ doc.name }}</p>
 
           <div class="btns">
             <button><img src="/pen.png"></button>         
-              <deleteDoc :doc="doc" @delete-doc="deleteDoc"/>            
-            <button class="arrowDbl handle"></button>
-          </div>
-
-        </div>
-        
-        <div class="term" v-if="doc.type !== 'Category'">
-          <span  v-text="doc.name "></span>
-
-           <div class="btns">
-            <button ><img src="/pen.png"></button>  
-            <deleteDoc :doc="doc" @delete-doc="deleteDoc"/>        
+            <button class="del_btn" @click= "$emit('delete-doc', docs, idx )"><img src="/delete.png"></button>          
             <button class="arrowDbl handle"></button>
           </div>
 
         </div>
 
-        <div class="nested" v-if="doc.type === 'Category'" >
-            <nested-draggable :docs="doc.docs" v-show="doc.open" />        
-        </div>
 
+      <draggable 
+        v-if="doc.type === 'Category'" 
+        :list="doc.childs"
+        :group="{ name: 'g2', put: ['g2','g3']}"
+        ghost-class="moving-item"
+        >
+
+        <div class="term nested"  v-for="el in doc.childs" :key="el.id" v-show="doc.open">
+          <p>{{ el.name }}</p>
+          <div class="btns">
+            <button><img src="/pen.png"></button>         
+            <button class="del_btn" @click= "$emit('delete-doc', doc.childs, idx )"><img src="/delete.png"></button>        
+            <button class="arrowDbl handle"></button>
+          </div>
+        </div>
+      </draggable>
+
+      </dl>
+
+    </draggable>
+
+    <draggable 
+      class="docs2"
+      :list="docs2" 
+      :group="{ name: 'g3', put: ['g2']  }"
+      ghost-class="moving-item"
+      >
+
+      <div class='term' v-for="doc in queryDocs2" :key="doc.id">
+        <p> {{ doc.name }}</p>
+        <div class="btns">
+          <button><img src="/pen.png"></button>         
+          <button class="del_btn" @click= "$emit('delete-doc', docs2, idx )"><img src="/delete.png"></button>        
+          <button class="arrowDbl handle"></button>
+        </div>
       </div>
-         
-    </dl>
+    </draggable>
 
-
-  </draggable>
+  </div>
+  
 </template>
+
+
 <script>
+import { ref } from "vue";
 import draggable from "vuedraggable"
-import deleteDoc from "./delete-doc.vue";
+
 
 export default {
+  data(){
+    return{
+      query: ref(''),
+    }
+  },
+  computed: {
+   
+     
+
+      
+queryDocs(){
+  const q= this.query.toLowerCase()
+  return this.docs.filter(doc => {
+    if (doc.name.toLowerCase().includes(q)) {
+      return true ||
+     doc.childs.filter((doc => doc.name.toLowerCase().includes(q)));
+    }
+    return false
+  }
+  
+  )
+  },
+
+
+  queryDocs2(){
+     return this.docs2.filter(doc => doc.name.toLowerCase().includes(this.query.toLowerCase()))
+  
+},
+  },
+
   props: {
     docs: {
       required: true,
       type: Array
     },
-    el: {
+    docs2: {
       required: true,
       type: Array
-    },
+    },  
   },
   components: {
-    draggable, deleteDoc
+    draggable
   },
-  name: "nested-draggable",
-  methods: {
-    deleteDoc(id){
-      this.$emit('delete-doc', id)      
-  },
-}
+  
+ 
+   
+  
 };
 </script>
 <style scoped>
-
+.del_btn:hover{
+  opacity: 0.5;  
+}
 
 .nested{
   margin-left: 16px;
+  
 }
 .category{
   display: flex;
@@ -97,8 +162,8 @@ export default {
   background-image: url("/arrowDbl.png");
 }
 
-.moving-card {
-  border: 3px solid blue;
+.moving-item {
+  border: 3px solid blue !important;
 }
 
 .term {
@@ -107,7 +172,6 @@ export default {
   font-size: 15px;
   font-weight: 500;
   line-height: 16px;
-  
   height: 48px;
   border: #DFE4EF solid 1px;
   padding-left: 15px;

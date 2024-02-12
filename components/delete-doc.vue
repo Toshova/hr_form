@@ -2,7 +2,7 @@
     <div>
         <button
         class="del_btn"
-        @click="$emit('delete-doc', doc.id)"><img src="/delete.png">
+        @click="$emit('delete-doc', doc, )"><img src="/delete.png">
         </button>
     </div>
     </template>
@@ -11,9 +11,10 @@
     export default {
         props: {
         doc: {
-            type: Object,
+            type: Array,
             required: true     
         },
+       
         
     },
         
