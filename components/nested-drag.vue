@@ -18,7 +18,7 @@
       ghost-class="moving-item"
       >
 
-      <dl class="acc_items item" v-for="doc in docs.filter(resp => !search || resp.name.toLowerCase().indexOf(search.toLowerCase())>=0)  " :key="doc.id">
+      <dl class="acc_items item" v-for="(doc, idx) in queryDocs" :key="doc.id">
 
         <div class="category term" >
 
@@ -44,7 +44,7 @@
         >
 
         <div class="term nested"  
-        v-for="el in doc.childs.filter(resp => !search || resp.name.toLowerCase().indexOf(search.toLowerCase())>=0)" 
+        v-for="(el, idx2) in filtering(doc.childs)" 
         :key="el.id" v-show="doc.open">
           <p>{{ el.name }}</p>
           <div class="btns">
@@ -76,7 +76,7 @@
       </div>
     </draggable>
 
-  </div>
+  </div> 
   
 </template>
 
@@ -94,12 +94,23 @@ export default {
   },
   computed: {
       
-queryDocs(){
-  return this.docs.filter(doc => doc.name.toLowerCase().includes(this.query.toLowerCase()))
+    queryDocs(){
+      return this.docs.filter((doc) => {
+        if (doc.name.toLowerCase().includes(this.search.toLowerCase())) {
+          return true;
+        } else {
+          let elHas = false;
+          doc.childs.filter((el) => {
+            if (el.name.toLowerCase().includes(this.search.toLowerCase())) {
+              elHas = true;
+            }
+          });
+          return elHas;
+        }
+      });
   },
 
-
-  queryDocs2(){
+      queryDocs2(){
      return this.docs2.filter(doc => doc.name.toLowerCase().includes(this.query.toLowerCase()))
   
 },
@@ -126,7 +137,13 @@ queryDocs(){
     },
     rmElement (arr, idx) {
       arr.splice(idx, 1)
-     }
+     },
+
+     filtering(array) {
+        return array.filter((resp) =>
+          resp.name.toLowerCase().includes(this.search.toLowerCase())
+        );
+      },
   }
   
  
