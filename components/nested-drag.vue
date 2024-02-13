@@ -7,7 +7,8 @@
       <input 
       placeholder="Поиск" 
       type="search" 
-      v-model="query">
+      v-model="search"
+      >
     </form>
   </div>
 
@@ -17,7 +18,7 @@
       ghost-class="moving-item"
       >
 
-      <dl class="acc_items item" v-for="(doc, idx) in queryDocs" :key="doc.id">
+      <dl class="acc_items item" v-for="doc in docs.filter(resp => !search || resp.name.toLowerCase().indexOf(search.toLowerCase())>=0)  " :key="doc.id">
 
         <div class="category term" >
 
@@ -28,7 +29,7 @@
 
           <div class="btns">
             <button><img src="/pen.png"></button>         
-            <button class="del_btn" @click= "$emit('delete-doc', docs, idx )"><img src="/delete.png"></button>          
+            <button class="del_btn" @click= "rmDoc(idx)"><img src="/delete.png"></button>          
             <button class="arrowDbl handle"></button>
           </div>
 
@@ -42,11 +43,13 @@
         ghost-class="moving-item"
         >
 
-        <div class="term nested"  v-for="el in doc.childs" :key="el.id" v-show="doc.open">
+        <div class="term nested"  
+        v-for="el in doc.childs.filter(resp => !search || resp.name.toLowerCase().indexOf(search.toLowerCase())>=0)" 
+        :key="el.id" v-show="doc.open">
           <p>{{ el.name }}</p>
           <div class="btns">
             <button><img src="/pen.png"></button>         
-            <button class="del_btn" @click= "$emit('delete-doc', doc.childs, idx )"><img src="/delete.png"></button>        
+            <button class="del_btn" @click= "rmElement (doc.childs, idx2)"><img src="/delete.png"></button>        
             <button class="arrowDbl handle"></button>
           </div>
         </div>
@@ -67,7 +70,7 @@
         <p> {{ doc.name }}</p>
         <div class="btns">
           <button><img src="/pen.png"></button>         
-          <button class="del_btn" @click= "$emit('delete-doc', docs2, idx )"><img src="/delete.png"></button>        
+          <button class="del_btn" @click= "rmDoc(idx)"><img src="/delete.png"></button>        
           <button class="arrowDbl handle"></button>
         </div>
       </div>
@@ -79,32 +82,20 @@
 
 
 <script>
-import { ref } from "vue";
 import draggable from "vuedraggable"
 
 
 export default {
   data(){
-    return{
-      query: ref(''),
+    return {
+      query: '',
+      search: ''
     }
   },
   computed: {
-   
-     
-
       
 queryDocs(){
-  const q= this.query.toLowerCase()
-  return this.docs.filter(doc => {
-    if (doc.name.toLowerCase().includes(q)) {
-      return true ||
-     doc.childs.filter((doc => doc.name.toLowerCase().includes(q)));
-    }
-    return false
-  }
-  
-  )
+  return this.docs.filter(doc => doc.name.toLowerCase().includes(this.query.toLowerCase()))
   },
 
 
@@ -127,6 +118,16 @@ queryDocs(){
   components: {
     draggable
   },
+
+  methods:{
+    rmDoc(idx) {
+      // eslint-disable-next-line vue/no-mutating-props
+      this.docs.splice(idx, 1)
+    },
+    rmElement (arr, idx) {
+      arr.splice(idx, 1)
+     }
+  }
   
  
    
