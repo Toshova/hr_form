@@ -22,15 +22,21 @@
 
         <div class="category term" >
 
-          <button class="arrow arrow-up" v-if="doc.open && doc.type === 'Category'" @click="doc.open = !doc.open"></button>
-          <button class="arrow arrow-down" v-if="!doc.open && doc.type === 'Category'" @click="doc.open = !doc.open" ></button>
+          <div class="docName">
+            <button class="arrow arrow-up" v-if="doc.open && doc.type === 'Category'" @click="doc.open = !doc.open"></button>
+            <button class="arrow arrow-down" v-if="!doc.open && doc.type === 'Category'" @click="doc.open = !doc.open" ></button>
 
-          <p > {{ doc.name }}</p>
+            <input type="text" v-model="doc.name" :disabled="!doc.isEditing">
+          </div>
+
+          
 
           <div class="btns">
-            <button><img src="/pen.png"></button>         
-            <button class="del_btn" @click= "rmDoc(idx)"><img src="/delete.png"></button>          
-            <button class="arrowDbl handle"></button>
+            <button @click="doc.isEditing = true" v-if="doc.isEditing==false"><img src="/pen.png"></button>
+            <button class="btn" @click="save(idx)" v-else-if="doc.isEditing">Save</button>
+            <button class="btn" v-if="doc.isEditing" @click="cancel(idx)">Cancel</button>
+            <button class="del_btn" @click= "rmDoc(idx)" v-if="doc.isEditing==false"><img src="/delete.png"></button>          
+            <button class="arrowDbl handle" v-if="doc.isEditing==false"></button>
           </div>
 
         </div>
@@ -40,17 +46,23 @@
         v-if="doc.type === 'Category'" 
         :list="doc.childs"
         :group="{ name: 'g2', put: ['g2','g3']}"
-        ghost-class="moving-item"
+        ghost-class="moving-item" 
         >
 
         <div class="term nested"  
-        v-for="(el, idx2) in filtering(doc.childs)" 
-        :key="el.id" v-show="doc.open">
-          <p>{{ el.name }}</p>
+          v-for="(el, idx2) in filtering(doc.childs)" 
+          :key="el.id" v-show="doc.open">
+         
+          <input type="text" v-model="el.name" :disabled="!el.isEditing">
+        
           <div class="btns">
-            <button><img src="/pen.png"></button>         
-            <button class="del_btn" @click= "rmElement (doc.childs, idx2)"><img src="/delete.png"></button>        
-            <button class="arrowDbl handle"></button>
+
+            <button  @click="el.isEditing = true" v-if="!el.isEditing"><img src="/pen.png"></button> 
+            <button class="btn" @click="saveEl(doc.childs, idx2)" v-else-if="el.isEditing">Save</button>
+            <button class="btn" v-if="el.isEditing" @click="el.isEditing=false">Cancel</button>
+
+            <button class="del_btn" @click= "rmElement (doc.childs, idx2)" v-if="!el.isEditing"><img src="/delete.png"></button>        
+            <button class="arrowDbl handle" v-if="!el.isEditing"></button>
           </div>
         </div>
       </draggable>
@@ -66,7 +78,7 @@
       ghost-class="moving-item"
       >
 
-      <div class='term' v-for="doc in queryDocs2" :key="doc.id">
+      <div class='docName term' v-for="doc in queryDocs2" :key="doc.id">
         <p> {{ doc.name }}</p>
         <div class="btns">
           <button><img src="/pen.png"></button>         
@@ -89,9 +101,19 @@ export default {
   data(){
     return {
       query: '',
-      search: ''
+      search: '',
+      copyArr: JSON.parse(JSON.stringify(this.docs)),
     }
   },
+ 
+  mounted(idx) {
+    this.cachedDoc = structuredClone(this.docs[idx]);
+  },
+  mounted(idx) {
+    this.cachedEl = structuredClone(this.docs[idx]);
+  },
+
+
   computed: {
       
     queryDocs(){
@@ -111,7 +133,7 @@ export default {
   },
 
       queryDocs2(){
-     return this.docs2.filter(doc => doc.name.toLowerCase().includes(this.query.toLowerCase()))
+     return this.docs2.filter(doc => doc.name.toLowerCase().includes(this.search.toLowerCase()))
   
 },
   },
@@ -131,6 +153,22 @@ export default {
   },
 
   methods:{
+    save(idx) {
+      
+      this.cachedDoc = structuredClone(this.docs[idx]);
+      this.docs[idx].isEditing = false;
+    },
+    saveEl(arr, idx) {
+      this.cachedEl = arr[idx]
+      arr[idx].isEditing = false;
+    },
+
+    cancel(idx) {
+      
+      this.docs[idx]= structuredClone(this.cachedDoc)
+      this.docs[idx].isEditing = false;
+    },
+    
     rmDoc(idx) {
       // eslint-disable-next-line vue/no-mutating-props
       this.docs.splice(idx, 1)
@@ -138,6 +176,8 @@ export default {
     rmElement (arr, idx) {
       arr.splice(idx, 1)
      },
+
+   
 
      filtering(array) {
         return array.filter((resp) =>
@@ -151,14 +191,23 @@ export default {
   
 };
 </script>
+
 <style scoped>
+.view {
+  width: 600px;
+  border: solid, 1px, blue !important
+}
+
+.docName{
+  display: flex;
+  align-items: center;
+}
 .del_btn:hover{
   opacity: 0.5;  
 }
 
 .nested{
-  margin-left: 16px;
-  
+  margin-left: 16px;  
 }
 .category{
   display: flex;
@@ -187,6 +236,7 @@ export default {
 .term {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   font-size: 15px;
   font-weight: 500;
   line-height: 16px;
@@ -202,10 +252,6 @@ line-height: 12px;
 color: #8E9CBB;
 margin-left: 15px;
 }
-.accordions {
-width: 100%;
-margin-top: 20px; 
-}
 
 .acc_items{
 justify-content: center;
@@ -213,13 +259,6 @@ width: 100%;
 min-height: 48px;
 }
 
-.acc_item{
-  width: 100%;
-  min-height: 48px;
-  border: #DFE4EF solid 1px;
-  align-items: center;
-
-}
 
 .arrow {
   width: 22px;
@@ -242,34 +281,28 @@ background-repeat: no-repeat;
 background-position: center center;
 }
 
-
-.doc_type {
-display: flex;
-flex-direction: column;
-justify-content: center;
-border: 1px solid #DFE4EF;
-min-height: 34px;
-padding-left: 15px;
-}
-.doc_in {
-margin-left: 12px;
-}
-
-.doc_out {
-display: flex;
-flex-direction: column;
-}
-
 .btns {
-  width: 100px;
+  width: 120px;
   display: flex;
   justify-content: space-around;
- 
   align-items: center;
 }
 
 
 
+input[type="search"]::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 12px;
+  width: 12px;
+  background-image: url("/pinkCross.png");
+  background-repeat: no-repeat;
+ background-size: 12px 12px;
+}
 
+input:focus {
+  outline: none;
+  width: 540px;
 
+}
 </style>

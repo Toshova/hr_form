@@ -7,48 +7,36 @@
         <div>
           <button ><img id="bookmark" src="/bookmark.png"></button>
         </div>
-        <div class="btn">
+        <div class="btn crossBtn">
           <button  @click="toggleModal"> Новый тип</button>
         </div>
-        <div class="btn">
-          <button>Новый документ</button>
+        <div class="btn crossBtn">
+          <button @click="toggleModal2"> Новый документ </button>
         </div>
       </div>           
   </div>
 
-  <div class="search_form" >
-    <form action="" method="get" >
-      <button type="submit"><img src="/loupe.png"></button>
-      <input 
-      placeholder="Поиск" 
-      type="search" 
-      v-model="query">
-    </form>
-  </div>
-
-
-
-
-
   <div class="accord_wrapper">
-    <nestedDrag :docs="docs" :docs2="docs2" @delete-doc="deleteDoc"/>
- 
+    <nestedDrag :docs="docs" :docs2="docs2"  @delete-doc="deleteDoc"/>
   </div>
 
 
 <modalWindow  
 v-show="isShowModal" 
 @close="toggleModal"
+@addType="addType"
+/>
+
+<modalWindow2
+v-show="isShowModal2" 
+@close="toggleModal2"
 @addDoc="addDoc"
 />
 
-<ul>
-  <div v-for="doc of queryDocs" :key="doc">{{ doc.name }}
-    <div v-for="el of doc.childs" :key="el">{{ el.name}}</div>
-  </div>
-</ul>
 
-{{ query }}
+
+
+
 </div>
   
 
@@ -61,18 +49,21 @@ v-show="isShowModal"
 import { ref } from "vue";
 import nestedDrag from "../components/nested-drag.vue";
 import modalWindow from "../components/modal-window.vue";
+import modalWindow2 from "../components/modal-window2.vue";
+
 
 
 export default {
   name: 'IndexPage',
 components: {
- nestedDrag, modalWindow
+ nestedDrag, modalWindow,  modalWindow2
 }, 
 
 data(){
   return {
     display: "Nested",   
     isShowModal: false,
+    isShowModal2: false,
     query: ref(''),
     
 		docs: [
@@ -81,33 +72,39 @@ data(){
           name: "Обязательные для всех",
           type: "Category",
           open: false,
+          isEditing: false,
           childs: [
             {
               id: 2,
               name: "Паспорт",
               type: "Document",
+              isEditing: false,
               
             },
             {
               id: 3,
               name: "Тестовое задание кандидата",
               type: "Document",
+              isEditing: false,
               
             },
             {
               id: 4,
               name: "Трудовой договор",
               type: "Document",
+              isEditing: false,
             },
             {
               id: 5,
               name:  "ИНН",
               type: "Document",
+              isEditing: false,
             },
             {
             id: 6,
             name: 'Мед. книжка',
             type: "Document",
+            isEditing: false,
             },
           ]
         },
@@ -116,11 +113,13 @@ data(){
           name: 'Обязательные для трудоустройства',
           type: "Category",
           open: false,
+          isEditing: false,
           childs: [
             {
               id: 8,
               name: 'Мед. книжка',
               type: "Document",
+              isEditing: false,
              
             }
           ]
@@ -130,6 +129,7 @@ data(){
           name: 'Специальные',
           type: "Category",
           open: false, 
+          isEditing: false,
           childs: []
           
         }
@@ -139,6 +139,7 @@ data(){
               id: 8,
               name: 'Мед. книжка',
               type: "Document",
+              isEditing: false,
              
             }
       ]
@@ -151,12 +152,16 @@ data(){
   toggleModal() {
       this.isShowModal = !this.isShowModal;
     },
-  changeInputValue(event){
-    console.log(event.target.value)
-  },
+  toggleModal2() {
+      this.isShowModal2 = !this.isShowModal2;
+    },
+
   addDoc(data){
+    this.docs2.push(data)
+  },
+  addType(data){
     this.docs.push(data)
-  }
+  },
 },
 
 }
@@ -211,12 +216,19 @@ body{
   font-size: 12px;
   font-weight: 500;
   line-height: 13px;
+  padding: 8px 20px 9px 30px; 
+ 
+}
+
+.crossBtn {
   background-image: url("/cross.png");
   background-repeat: no-repeat;
   background-position: 10px 50%;
   padding: 8px 20px 9px 30px;
   margin-left: 10px;
 }
+
+
  .accord_wrapper{
   width: 100%;
  }

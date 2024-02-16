@@ -10,14 +10,14 @@
               <form>
                 <input class="input" 
                 type="text" 
-                placeholder="Введите тип документа"
+                placeholder="Введите документ"
                 v-model="inputValue"
                 >
               </form>
-        
+              
             </section>
             <footer class="simple-modal-footer">
-              <button class="btn" type="button" @click="addType"> Add </button>
+              <button class="btn" type="button" @click="addDoc"> Add </button>
               <button class="btn" type="button" @click="closeModal">Close</button>
             </footer>
           </div>
@@ -28,7 +28,7 @@
 
 <script>
 export default {
-  name: 'modalWindow',
+  name: 'modalWindow2',
   data(){
     return {
         inputValue: '',
@@ -41,19 +41,17 @@ export default {
     closeModal() {
       this.$emit('close');
     },
-    addType() {
-      if (this.inputValue.trim()){
-            this.$emit('addType', {
+   
+    addDoc() {
+        if (this.inputValue.trim()){
+            this.$emit('addDoc', {
                 id: Date.now(),
                 name: this.inputValue,
-                type: "Category",
-          open: false,
-          childs: [] 
+                type: "Document", 
             })
         }
         this.inputValue=''
     },
-   
   },
 };
 </script>
